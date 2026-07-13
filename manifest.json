@@ -1,0 +1,22 @@
+{
+  "name": "CyberLabGPT Pro",
+  "short_name": "CyberLabGPT",
+  "description": "AI Assistant for Ethical Hacking and Cybersecurity",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000428",
+  "theme_color": "#007AFF",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://i.imgur.com/8QfZ8Yp.png", 
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://i.imgur.com/8QfZ8Yp.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
