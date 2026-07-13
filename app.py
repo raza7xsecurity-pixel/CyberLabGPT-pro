@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from groq import Groq
 import os, base64
 
@@ -12,26 +12,43 @@ def home():
 @app.route("/ask", methods=["POST"])
 def ask():
     data = request.json
-    question = data["question"]
-    image_data = data.get("image") # image bhi aayegi ab
-    
-    messages = [{"role": "user", "content": question}]
-    
-    # agar image bheji hai to usko bhi add kar denge
-    if image_data:
-        messages[0]["content"] = [
-            {"type": "text", "text": question},
-            {"type": "image_url", "image_url": {"url": image_data}}
-        ]
+    question = data.get("question", "")
+    image_data = data.get("image") # image bhi
 
-    chat_completion = client.chat.completions.create(
-        messages=messages,
-        model="llama-3.1-8b-instant",
-        temperature=0.7,
-        max_tokens=1024
-    )
-    
-    return jsonify({"answer": chat_completion.choices[0].message.content})
+    if not question and not image_data:
+        return jsonify({"answer": "Please type something"})
+
+    try:
+        system_prompt = "You are CyberGPT Pro. Cybersecurity and Ethical Hacking expert. Answer in detail with points and code."
+
+        # NOTE: Groq abhi image nahi support karta
+        if image_data:
+            return jsonify({"answer": "⚠️ Groq image support nahi karta. Sirf text pucho bhai."})
+
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": question}
+            ],
+            model="llama-3.1-70b-versatile",
+            temperature=0.7,
+            max_tokens=1024,
+        )
+
+        answer = chat_completion.choices[0].message.content
+        return jsonify({"answer": answer})
+
+    except Exception as e:
+        return jsonify({"answer": f"Error: {str(e)}"})
+
+# PWA ke liye
+@app.route("/manifest.json")
+def manifest():
+    return send_from_directory(".", "manifest.json")
+
+@app.route("/service-worker.js")
+def sw():
+    return send_from_directory(".", "service-worker.js")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
