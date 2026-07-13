@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>CyberLabGPT Pro</title>
+<style>
+body { background: #0a0a0a; color: #00ff88; font-family: 'Courier New'; text-align: center; padding: 50px; }
+.container { max-width: 700px; margin: auto; }
+input { width: 80%; padding: 15px; background: #1a1a1a; border: 2px solid #00ff88; color: #00ff88; border-radius: 10px; }
+button { padding: 15px 30px; background: #00ff88; color: #000; border: none; border-radius: 10px; cursor: pointer; }
+#answer { margin-top: 30px; text-align: left; background: #1a1a1a; padding: 20px; border-radius: 10px; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🛡️ CyberLabGPT Pro</h1>
+<input type="text" id="question" placeholder="Ask about nmap, CVE, exploit...">
+<button onclick="ask()">Send</button>
+<div id="answer"></div>
+</div>
+<script>
+async function ask() {
+    let q = document.getElementById("question").value;
+    let res = await fetch("/ask", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({question: q})});
+    let data = await res.json();
+    document.getElementById("answer").innerText = data.answer;
+}
+</script>
+</body>
+</html>
