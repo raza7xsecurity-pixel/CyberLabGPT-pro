@@ -13,10 +13,16 @@ def home():
 def ask():
     data = request.json
     question = data["question"]
+    
     chat_completion = client.chat.completions.create(
-        messages=[{"role": "user", "content": f"You are CyberLabGPT Pro, a cybersecurity AI. Answer: {question}"}],
-        model="llama-3.1-70b-versatile",
+        messages=[{
+            "role": "user",
+            "content": f"You are CyberLabGPT Pro, a cybersecurity AI assistant. Be helpful and accurate. Question: {question}"
+        }],
+        model="llama-3.1-8b-instant", # ye wala model abhi working hai
+        temperature=0.7
     )
+    
     return jsonify({"answer": chat_completion.choices[0].message.content})
 
 if __name__ == "__main__":
