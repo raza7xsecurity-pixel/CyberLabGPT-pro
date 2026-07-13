@@ -4,32 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CyberLabGPT Pro</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#007AFF">
+
 <style>
   @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;600&display=swap');
-  
-    * {margin:0; padding:0; box-sizing:border-box; font-family: 'SF Pro Display', -apple-system, sans-serif;}
+    * {margin:0; padding:0; box-sizing:border-box; font-family: 'SF Pro Display', sans-serif;}
   
   body {
     background: linear-gradient(180deg, #000428 0%, #004e92 100%);
-    color: #fff;
-    display:flex; justify-content:center; align-items:center; height:100vh;
-    overflow:hidden;
+    color: #fff; display:flex; justify-content:center; align-items:center; height:100vh; overflow:hidden;
   }
-  body::before { /* water ripple effect */
-    content:''; position:absolute; top:-50%; left:-50%;
-    width:200%; height:200%;
+  /* Water Ripple Background */
+  body::before { 
+    content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%;
     background: radial-gradient(circle, rgba(0,200,255,0.15) 0%, transparent 70%);
-    animation: ripple 10s infinite linear;
+    animation: ripple 15s infinite linear;
   }
-  @keyframes ripple {
-    0% {transform: rotate(0deg);}
-    100% {transform: rotate(360deg);}
-  }
+  @keyframes ripple { 0% {transform: rotate(0deg);} 100% {transform: rotate(360deg);} }
 
  .container {
     width: 95%; max-width: 850px; height: 92vh;
-    background: rgba(255,255,255,0.08); 
-    backdrop-filter: blur(30px) saturate(180%); /* iOS glass */
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 40px; padding: 20
+    background: rgba(255,255,255,0.06); 
+    backdrop-filter: blur(30px)
