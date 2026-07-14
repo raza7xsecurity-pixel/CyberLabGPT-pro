@@ -1,116 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="hi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>raza7x.hacker gpt - AI Cybersecurity Assistant</title>
-  
-  <!-- PWA -->
-  <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#7c3aed">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  
+  <title>CyberLabGPT-pro</title>
   <style>
-    * {margin:0; padding:0; box-sizing:border-box; font-family: 'Segoe UI', sans-serif;}
-    body {background: linear-gradient(135deg, #0f172a, #1e293b); color:#e2e8f0; display:flex; flex-direction:column; height:100vh;}
-    header {background:#1e293b; padding:12px 15px; display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #7c3aed;}
-    header h1 {color:#a78bfa; font-size:18px;}
-    #clearBtn {background:#ef4444; border:none; padding:6px 12px; border-radius:6px; color:white; cursor:pointer; font-size:12px;}
-    #chat {flex:1; overflow-y:auto; padding:15px;}
-   .msg {margin:10px 0; padding:12px; border-radius:12px; max-width:85%; white-space:pre-wrap;}
-   .user {background:#7c3aed; margin-left:auto; text-align:right;}
-   .bot {background:#334155; margin-right:auto;}
-    #input-area {display:flex; padding:10px; background:#1e293b; border-top:2px solid #334155;}
-    #question {flex:1; padding:12px; border:none; border-radius:8px; background:#334155; color:white; outline:none;}
-    button {margin-left:8px; padding:12px; border:none; border-radius:8px; background:#7c3aed; color:white; cursor:pointer;}
-    button:active {transform:scale(0.95);}
-    #installBtn {display:none; position:fixed; bottom:70px; right:15px; background:#22c55e;}
-    code {background:#0f172a; padding:2px 6px; border-radius:4px; color:#22d3ee;}
+    body { background: #000428; color: white; font-family: Arial; padding: 20px; max-width: 700px; margin: auto; }
+    #chatBox { border: 1px solid #0007AFF; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
+  .user { text-align: right; color: #00ff88; margin: 8px 0; }
+  .ai { text-align: left; color: #00aaff; margin: 8px 0; }
+    input { width: 65%; padding: 12px; border-radius: 8px; border: none; }
+    button { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    #hifi { background: #0007AFF; color: white; }
+    #micBtn { background: #00ff88; color: black; }
+    #stopBtn { background: red; color: white; }
   </style>
 </head>
 <body>
-  <header>
-    <h1>🛡️ raza7x.hacker gpt</h1>
-    <button id="clearBtn" onclick="clearChat()">Clear Chat</button>
-  </header>
 
-  <div id="chat">
-    <div class="msg bot">Hello! I am raza7x.hacker gpt. 
-I remember our conversation. Ask me anything about Cybersecurity, Hacking, Networking.</div>
-  </div>
+  <h1>raza7x.hacker gpt 🤖</h1>
 
-  <div id="input-area">
-    <input type="text" id="question" placeholder="Ask anything..." autocomplete="off">
-    <button id="micBtn">🎤</button>
-    <button id="sendBtn">Send</button>
-  </div>
+  <div id="chatBox"></div>
 
-  <button id="installBtn">Install App</button>
+  <input type="text" id="userInput" placeholder="Yaha likho ya bolo...">
+  <button id="hifi">Send</button>
+  <button id="micBtn">🎤 Bolo</button>
+  <button id="stopBtn" style="display:none;">🔇 Stop</button>
 
 <script>
-const chat = document.getElementById('chat');
-const question = document.getElementById('question');
-const sendBtn = document.getElementById('sendBtn');
-const micBtn = document.getElementById('micBtn');
+const GROK_API_KEY = "YOUR_GROK_API_KEY"; // <-- Yaha apni Grok API key daalo
 
-// SEND MESSAGE
-async function sendMessage() {
-  const text = question.value.trim();
+// ========== 1. GROK API SE BAAT ==========
+document.getElementById('hifi').onclick = async () => {
+  const input = document.getElementById('userInput');
+  const text = input.value;
   if(!text) return;
-  addMsg(text, 'user');
-  question.value = '';
 
-  const res = await fetch('/ask', {
-    method: 'POST',
-    headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({question: text})
-  });
-  const data = await res.json();
-  addMsg(data.answer, 'bot');
+  // User ka msg show
+  document.getElementById('chatBox').innerHTML += `<div class="user">You: ${text}</div>`;
+  input.value = '';
+  document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+
+  // Grok API Call
+  try {
+    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${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}`
+      },
+      body: JSON.stringify({
+        "model": "grok-beta", // ya "grok-2-latest"
+        "messages": [{"role": "user", "content": text}],
+        "stream": false
+      })
+    });
+
+    const data = await response.json();
+    const aiReply = data.choices[0].message.content;
+
+    showAIReply(aiReply); // Reply show + bolega
+
+  } catch (error) {
+    showAIReply("Error: API se connect nahi ho paaya");
+    console.error(error);
+  }
 }
 
-function addMsg(text, sender) {
-  const div = document.createElement('div');
-  div.className = 'msg ' + sender;
-  // code highlight
-  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-  div.innerHTML = text;
-  chat.appendChild(div);
-  chat.scrollTop = chat.scrollHeight;
+// AI Reply show + Bolna
+function showAIReply(aiText){
+    document.getElementById('chatBox').innerHTML += `<div class="ai">AI: ${aiText}</div>`;
+    speak(aiText); // <-- AI ko bolwana
+    document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
 }
 
-sendBtn.onclick = sendMessage;
-question.addEventListener('keypress', e => {if(e.key==='Enter') sendMessage();});
-
-// CLEAR CHAT
-async function clearChat(){
-  await fetch('/clear', {method:'POST'});
-  chat.innerHTML = '<div class="msg bot">History cleared. New chat started.</div>';
-}
-
-// VOICE
-const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-recognition.lang = 'en-IN';
-micBtn.onclick = () => recognition.start();
-recognition.onresult = e => {question.value = e.results[0][0].transcript; sendMessage();}
-
-// PWA INSTALL
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBtn').style.display = 'block';
+// Enter dabane se bhi send ho
+document.getElementById('userInput').addEventListener("keypress", function(e) {
+  if (e.key === "Enter") document.getElementById('hifi').click();
 });
-document.getElementById('installBtn').onclick = async () => {
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  document.getElementById('installBtn').style.display = 'none';
+
+// ========== 2. LIVE VOICE CODE ==========
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = new SpeechRecognition();
+recognition.lang = 'hi-IN'; // Hindi. English: 'en-US'
+recognition.continuous = false;
+
+const micBtn = document.getElementById('micBtn');
+const stopBtn = document.getElementById('stopBtn');
+
+micBtn.onclick = () => {
+  recognition.start();
+  micBtn.style.display = 'none';
+  stopBtn.style.display = 'inline-block';
 }
 
-// REGISTER SERVICE WORKER
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/service-worker.js');
+stopBtn.onclick = () => recognition.stop();
+
+recognition.onresult = (event) => {
+  const voiceText = event.results[0][0].transcript;
+  document.getElementById('userInput').value = voiceText;
+  document.getElementById('hifi').click(); // hifi button auto click
+}
+
+recognition.onend = () => {
+  micBtn.style.display = 'inline-block';
+  stopBtn.style.display = 'none';
+}
+
+// 3. BOLNE WALA FUNCTION
+function speak(text){
+  window.speechSynthesis.cancel();
+  const speech = new SpeechSynthesisUtterance(text);
+  speech.lang = 'hi-IN'; // Hindi voice. English: 'en-US'
+  speech.rate = 1;
+  window.speechSynthesis.speak(speech);
 }
 </script>
+
 </body>
 </html>
