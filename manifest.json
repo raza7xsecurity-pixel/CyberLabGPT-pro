@@ -1,7 +1,8 @@
 {
-  "name": "CyberLabGPT Pro",
-  "short_name": "CyberLabGPT",
-  "description": "AI Assistant for Ethical Hacking and Cybersecurity",
+  "name": "raza7x.hacker gpt",
+  "short_name": "raza7x",
+  "description": "AI for Cybersecurity, Ethical Hacking and Tech by raza7x"
+}
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000428",
