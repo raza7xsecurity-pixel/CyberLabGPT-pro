@@ -1,0 +1,38 @@
+:root{
+  --bg:#071025;
+  --card:#0f1724;
+  --accent:#06b6d4;
+  --muted:#94a3b8;
+  --user:#0ea5a4;
+  --ai:#60a5fa;
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(180deg,var(--bg),#001227);color:#e6eef6;font-family:Inter, system-ui, Arial, sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.container{width:100%;max-width:880px}
+.header{margin-bottom:12px}
+.brand{display:flex;gap:12px;align-items:center}
+.logo{width:48px;height:48px;border-radius:8px}
+.brand h1{margin:0;font-size:20px}
+.tag{margin:0;color:var(--muted);font-size:13px}
+.card{background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.03);padding:12px;border-radius:12px;box-shadow:0 6px 18px rgba(2,6,23,0.6)}
+.chatBox{height:56vh;min-height:320px;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:10px}
+.message{display:flex}
+.message.user{justify-content:flex-end}
+.message.ai{justify-content:flex-start}
+.bubble{max-width:82%;padding:12px 14px;border-radius:14px;font-size:15px;line-height:1.35}
+.message.user .bubble{background:linear-gradient(90deg,var(--user),#06b6b4);color:#042023;border-bottom-right-radius:6px;border-bottom-left-radius:14px}
+.message.ai .bubble{background:linear-gradient(90deg,#04203b,var(--ai));color:#e6f1ff;border-bottom-left-radius:6px;border-bottom-right-radius:14px}
+.composer{display:flex;gap:10px;align-items:center;margin-top:12px}
+.composer .btn{background:var(--accent);border:none;padding:10px 14px;border-radius:10px;color:#06202a;cursor:pointer}
+.composer .btn.mic{background:transparent;color:var(--accent);font-size:18px;border:1px solid rgba(255,255,255,0.04);padding:8px}
+.composer input{flex:1;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;font-size:15px}
+.composer .send{background:var(--accent);color:#021517}
+.composer .send.loading{opacity:0.6}
+.footer{margin-top:10px;color:var(--muted);font-size:13px;text-align:center}
+.message .time{font-size:11px;color:var(--muted);margin-top:6px}
+@media (max-width:600px){
+  .chatBox{height:56vh}
+  .brand h1{font-size:18px}
+}
+
+.btn.active{box-shadow:0 4px 14px rgba(6,182,212,0.16)}
