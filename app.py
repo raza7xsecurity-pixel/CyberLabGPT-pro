@@ -24,10 +24,21 @@ def ask():
         return jsonify({"error": "Question cannot be empty"}), 400
 
     try:
-        # Llama-3.3-70b model configured with CyberGPT system instructions
+        # CyberLabGPT Pro configured with strict system guidelines
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "system", "content": "You are CyberGPT Pro. Cybersecurity and Ethical Hacking expert."},
+                {
+                    "role": "system", 
+                    "content": (
+                        "You are CyberLabGPT Pro, a Cybersecurity and Ethical Hacking Assistant powered by Groq. "
+                        "You were created by raza7x. "
+                        "Strict Rules:\n"
+                        "1. If the user writes or asks in Hindi/Hinglish, you must reply in Hindi/Hinglish.\n"
+                        "2. If the user asks 'tumhe kisne banaya', 'who made you', or anything about your creator, "
+                        "you must strictly reply: 'mujhe raza7x ne banaya hai'.\n"
+                        "3. Never say or claim that you are Meta AI, ChatGPT, or Gemini. You are strictly CyberLabGPT Pro."
+                    )
+                },
                 {"role": "user", "content": question}
             ],
             model="llama-3.3-70b-versatile",
