@@ -36,6 +36,8 @@ def ask():
         )
         
         answer = chat_completion.choices[0].message.content
+        
+        # Sirf JSON me answer return ho raha hai (No Audio/TTS here)
         return jsonify({"answer": answer})
 
     except Exception as e:
