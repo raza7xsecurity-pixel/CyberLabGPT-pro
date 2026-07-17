@@ -3,7 +3,13 @@ from groq import Groq
 import os
 
 app = Flask(__name__)
-client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
+
+# Environment variable se key read karega (Secure method)
+api_key = os.environ.get("GROQ_API_KEY")
+if not api_key:
+    print("WARNING: GROQ_API_KEY environment variable missing!")
+
+client = Groq(api_key=api_key)
 
 @app.route("/")
 def home():
@@ -11,19 +17,30 @@ def home():
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    data = request.json
-    question = data.get("question", "")
+    data = request.json or {}
+    question = data.get("question", "").strip()
 
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {"role": "system", "content": "You are CyberGPT Pro. Cybersecurity and Ethical Hacking expert."},
-            {"role": "user", "content": question}
-        ],
-        model="llama-3.3-70b-versatile", # <-- YE NAYA MODEL HAI
-        temperature=0.7,
-        max_tokens=1024,
-    )
-    return jsonify({"answer": chat_completion.choices[0].message.content})
+    if not question:
+        return jsonify({"error": "Question cannot be empty"}), 400
+
+    try:
+        # Llama-3.3-70b model configured with CyberGPT system instructions
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are CyberGPT Pro. Cybersecurity and Ethical Hacking expert."},
+                {"role": "user", "content": question}
+            ],
+            model="llama-3.3-70b-versatile",
+            temperature=0.7,
+            max_tokens=1024,
+        )
+        
+        answer = chat_completion.choices[0].message.content
+        return jsonify({"answer": answer})
+
+    except Exception as e:
+        print(f"Groq API Error: {e}")
+        return jsonify({"error": "Server or API issue occurred. Please try again."}), 500
 
 @app.route("/manifest.json")
 def manifest():
@@ -34,4 +51,4 @@ def sw():
     return send_from_directory(".", "service-worker.js")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
