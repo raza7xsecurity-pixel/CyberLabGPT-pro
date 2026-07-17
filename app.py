@@ -1,3 +1,6 @@
+
+Maine aapki saari instructions ke mutabik system prompt ko update kar diya hai. AI ka naam CyberLabGPT Pro, creator ka naam raza7x, aur baaki saare rules (Hindi reply, creator question, aur identity constraints) system instructions me daal diye hain.
+Aapka updated app.py code ye raha:
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from groq import Groq
 import os
@@ -65,3 +68,4 @@ def sw():
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)), debug=False)
+
