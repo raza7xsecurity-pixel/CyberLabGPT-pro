@@ -3,121 +3,116 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CyberLabGPT-pro</title>
-  <style>
-    body { background: #000428; color: white; font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
-    #chatBox { border: 1px solid #007aff; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.2); }
-    .user { text-align: right; color: #00ff88; margin: 8px 0; font-weight: bold; }
-    .ai { text-align: left; color: #00aaff; margin: 8px 0; }
-    input { width: 55%; padding: 12px; border-radius: 8px; border: none; font-size: 16px; }
-    button { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
-    #hifi { background: #007aff; color: white; }
-    #micBtn { background: #00ff88; color: black; }
-    #stopBtn { background: red; color: white; }
-  </style>
+  <title>CyberLabGPT Pro</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f1724">
+  <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+  <main class="container">
+    <header class="header">
+      <div class="brand">
+        <img src="/icon-192.png" alt="logo" class="logo">
+        <div>
+          <h1>CyberLabGPT Pro</h1>
+          <p class="tag">Cybersecurity & Ethical Hacking assistant — Hindi supported</p>
+        </div>
+      </div>
+    </header>
 
-  <h1>raza7x.hacker gpt 🤖</h1>
+    <section id="chatContainer" class="card">
+      <div id="chatBox" class="chatBox" aria-live="polite"></div>
+    </section>
 
-  <div id="chatBox"></div>
+    <form id="composer" class="composer" onsubmit="return false;">
+      <button id="micBtn" class="btn mic" title="Voice input">🎤</button>
+      <input aria-label="प्रश्न लिखें" type="text" id="userInput" placeholder="यहाँ लिखें या बोलें..." autocomplete="off">
+      <button id="hifi" class="btn send">Send</button>
+    </form>
 
-  <input type="text" id="userInput" placeholder="Yaha likho ya bolo...">
-  <button id="hifi">Send</button>
-  <button id="micBtn">🎤 Bolo</button>
-  <button id="stopBtn" style="display:none;">🔇 Stop</button>
+    <footer class="footer">Powered by Groq • Keep prompts concise for best results</footer>
+  </main>
 
-<script>
-// ========== 1. FLASK BACKEND INTERACTION ==========
-document.getElementById('hifi').onclick = async () => {
-  const input = document.getElementById('userInput');
-  const text = input.value.trim();
-  if(!text) return;
+  <script>
+  // Helper: escape HTML to avoid injection
+  function escapeHtml(str){
+    if(!str) return '';
+    return str.replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+  }
 
   const chatBox = document.getElementById('chatBox');
-  chatBox.innerHTML += `<div class="user">You: ${text}</div>`;
-  input.value = '';
-  chatBox.scrollTop = chatBox.scrollHeight;
+  const sendBtn = document.getElementById('hifi');
+  const inputEl = document.getElementById('userInput');
 
-  try {
-    // API request directed safely to your local Flask route
-    const response = await fetch("/ask", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ "question": text })
+  async function sendQuestion(){
+    const text = inputEl.value.trim();
+    if(!text) return;
+    appendMessage('user', text);
+    setBusy(true);
+    inputEl.value = '';
+
+    try{
+      const res = await fetch('/ask', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({question: text})});
+      const data = await res.json();
+      if(res.ok){
+        appendMessage('ai', data.answer || 'No answer');
+        speak(data.answer || '');
+      } else {
+        appendMessage('ai', 'त्रुटि: ' + (data.error || 'सर्वर समस्या'));
+      }
+    } catch(err){
+      appendMessage('ai', 'सर्वर से जुड़ाव असफल');
+      console.error(err);
+    } finally{
+      setBusy(false);
+    }
+  }
+
+  function appendMessage(who, text){
+    const div = document.createElement('div');
+    div.className = 'message ' + who;
+    div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  function setBusy(flag){
+    if(flag){
+      sendBtn.disabled = true; sendBtn.classList.add('loading');
+    } else {
+      sendBtn.disabled = false; sendBtn.classList.remove('loading');
+    }
+  }
+
+  sendBtn.addEventListener('click', sendQuestion);
+  inputEl.addEventListener('keypress', e => { if(e.key === 'Enter') sendQuestion(); });
+
+  // Speech recognition (STT)
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(SpeechRecognition){
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'hi-IN';
+    recognition.continuous = false;
+    const micBtn = document.getElementById('micBtn');
+    let listening = false;
+    micBtn.addEventListener('click', (e) =>{
+      e.preventDefault();
+      if(!listening){ recognition.start(); micBtn.classList.add('active'); listening = true; }
+      else { recognition.stop(); micBtn.classList.remove('active'); listening = false; }
     });
 
-    const data = await response.json();
-    
-    if (response.ok) {
-      showAIReply(data.answer); 
-    } else {
-      showAIReply("Error: " + (data.error || "Kuch gadbad hui"));
-    }
-
-  } catch (error) {
-    showAIReply("Error: Server se connect nahi ho paaya");
-    console.error(error);
-  }
-}
-
-function showAIReply(aiText){
-    const chatBox = document.getElementById('chatBox');
-    chatBox.innerHTML += `<div class="ai">AI: ${aiText}</div>`;
-    speak(aiText); 
-    chatBox.scrollTop = chatBox.scrollHeight;
-}
-
-document.getElementById('userInput').addEventListener("keypress", function(e) {
-  if (e.key === "Enter") document.getElementById('hifi').click();
-});
-
-// ========== 2. SPEECH TO TEXT (STT) ==========
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-let recognition;
-
-if (SpeechRecognition) {
-  recognition = new SpeechRecognition();
-  recognition.lang = 'hi-IN'; 
-  recognition.continuous = false;
-
-  const micBtn = document.getElementById('micBtn');
-  const stopBtn = document.getElementById('stopBtn');
-
-  micBtn.onclick = () => {
-    recognition.start();
-    micBtn.style.display = 'none';
-    stopBtn.style.display = 'inline-block';
+    recognition.onresult = (ev) => { inputEl.value = ev.results[0][0].transcript; sendQuestion(); };
+    recognition.onend = () => { listening = false; document.getElementById('micBtn').classList.remove('active'); };
+  } else {
+    document.getElementById('micBtn').style.display = 'none';
   }
 
-  stopBtn.onclick = () => recognition.stop();
-
-  recognition.onresult = (event) => {
-    const voiceText = event.results[0][0].transcript;
-    document.getElementById('userInput').value = voiceText;
-    document.getElementById('hifi').click(); 
+  // Text-to-speech (TTS) safer use
+  function speak(text){
+    if(!('speechSynthesis' in window) || !text) return;
+    try{ window.speechSynthesis.cancel(); const ut = new SpeechSynthesisUtterance(text); ut.lang = 'hi-IN'; ut.rate = 1; window.speechSynthesis.speak(ut); } catch(e){ console.warn(e); }
   }
-
-  recognition.onend = () => {
-    micBtn.style.display = 'inline-block';
-    stopBtn.style.display = 'none';
-  }
-} else {
-  console.log("Speech recognition not supported in this browser.");
-  document.getElementById('micBtn').style.display = 'none';
-}
-
-// ========== 3. TEXT TO SPEECH (TTS) ==========
-function speak(text){
-  window.speechSynthesis.cancel(); 
-  const speech = new SpeechSynthesisUtterance(text);
-  speech.lang = 'hi-IN'; 
-  speech.rate = 1.1; 
-  window.speechSynthesis.speak(speech);
-}
-</script>
+  </script>
 
 </body>
 </html>
