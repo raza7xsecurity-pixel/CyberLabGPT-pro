@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CyberLabGPT-pro</title>
   <style>
-    body { background: #000428; color: white; font-family: Arial; padding: 20px; max-width: 700px; margin: auto; }
-    #chatBox { border: 1px solid #0007AFF; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 8px; }
-  .user { text-align: right; color: #00ff88; margin: 8px 0; }
-  .ai { text-align: left; color: #00aaff; margin: 8px 0; }
-    input { width: 65%; padding: 12px; border-radius: 8px; border: none; }
-    button { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    #hifi { background: #0007AFF; color: white; }
+    body { background: #000428; color: white; font-family: Arial, sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    #chatBox { border: 1px solid #007aff; height: 400px; overflow-y: auto; padding: 10px; margin-bottom: 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.2); }
+    .user { text-align: right; color: #00ff88; margin: 8px 0; font-weight: bold; }
+    .ai { text-align: left; color: #00aaff; margin: 8px 0; }
+    input { width: 55%; padding: 12px; border-radius: 8px; border: none; font-size: 16px; }
+    button { padding: 12px 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; }
+    #hifi { background: #007aff; color: white; }
     #micBtn { background: #00ff88; color: black; }
     #stopBtn { background: red; color: white; }
   </style>
@@ -28,91 +28,93 @@
   <button id="stopBtn" style="display:none;">🔇 Stop</button>
 
 <script>
-const GROK_API_KEY = "YOUR_GROK_API_KEY"; // <-- Yaha apni Grok API key daalo
-
-// ========== 1. GROK API SE BAAT ==========
+// ========== 1. FLASK BACKEND INTERACTION ==========
 document.getElementById('hifi').onclick = async () => {
   const input = document.getElementById('userInput');
-  const text = input.value;
+  const text = input.value.trim();
   if(!text) return;
 
-  // User ka msg show
-  document.getElementById('chatBox').innerHTML += `<div class="user">You: ${text}</div>`;
+  const chatBox = document.getElementById('chatBox');
+  chatBox.innerHTML += `<div class="user">You: ${text}</div>`;
   input.value = '';
-  document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+  chatBox.scrollTop = chatBox.scrollHeight;
 
-  // Grok API Call
   try {
-    const response = await fetch("https://api.x.ai/v1/chat/completions", {
+    // API request directed safely to your local Flask route
+    const response = await fetch("/ask", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${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}`
+        "Content-Type": "application/json"
       },
-      body: JSON.stringify({
-        "model": "grok-beta", // ya "grok-2-latest"
-        "messages": [{"role": "user", "content": text}],
-        "stream": false
-      })
+      body: JSON.stringify({ "question": text })
     });
 
     const data = await response.json();
-    const aiReply = data.choices[0].message.content;
-
-    showAIReply(aiReply); // Reply show + bolega
+    
+    if (response.ok) {
+      showAIReply(data.answer); 
+    } else {
+      showAIReply("Error: " + (data.error || "Kuch gadbad hui"));
+    }
 
   } catch (error) {
-    showAIReply("Error: API se connect nahi ho paaya");
+    showAIReply("Error: Server se connect nahi ho paaya");
     console.error(error);
   }
 }
 
-// AI Reply show + Bolna
 function showAIReply(aiText){
-    document.getElementById('chatBox').innerHTML += `<div class="ai">AI: ${aiText}</div>`;
-    speak(aiText); // <-- AI ko bolwana
-    document.getElementById('chatBox').scrollTop = document.getElementById('chatBox').scrollHeight;
+    const chatBox = document.getElementById('chatBox');
+    chatBox.innerHTML += `<div class="ai">AI: ${aiText}</div>`;
+    speak(aiText); 
+    chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-// Enter dabane se bhi send ho
 document.getElementById('userInput').addEventListener("keypress", function(e) {
   if (e.key === "Enter") document.getElementById('hifi').click();
 });
 
-// ========== 2. LIVE VOICE CODE ==========
+// ========== 2. SPEECH TO TEXT (STT) ==========
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = new SpeechRecognition();
-recognition.lang = 'hi-IN'; // Hindi. English: 'en-US'
-recognition.continuous = false;
+let recognition;
 
-const micBtn = document.getElementById('micBtn');
-const stopBtn = document.getElementById('stopBtn');
+if (SpeechRecognition) {
+  recognition = new SpeechRecognition();
+  recognition.lang = 'hi-IN'; 
+  recognition.continuous = false;
 
-micBtn.onclick = () => {
-  recognition.start();
-  micBtn.style.display = 'none';
-  stopBtn.style.display = 'inline-block';
+  const micBtn = document.getElementById('micBtn');
+  const stopBtn = document.getElementById('stopBtn');
+
+  micBtn.onclick = () => {
+    recognition.start();
+    micBtn.style.display = 'none';
+    stopBtn.style.display = 'inline-block';
+  }
+
+  stopBtn.onclick = () => recognition.stop();
+
+  recognition.onresult = (event) => {
+    const voiceText = event.results[0][0].transcript;
+    document.getElementById('userInput').value = voiceText;
+    document.getElementById('hifi').click(); 
+  }
+
+  recognition.onend = () => {
+    micBtn.style.display = 'inline-block';
+    stopBtn.style.display = 'none';
+  }
+} else {
+  console.log("Speech recognition not supported in this browser.");
+  document.getElementById('micBtn').style.display = 'none';
 }
 
-stopBtn.onclick = () => recognition.stop();
-
-recognition.onresult = (event) => {
-  const voiceText = event.results[0][0].transcript;
-  document.getElementById('userInput').value = voiceText;
-  document.getElementById('hifi').click(); // hifi button auto click
-}
-
-recognition.onend = () => {
-  micBtn.style.display = 'inline-block';
-  stopBtn.style.display = 'none';
-}
-
-// 3. BOLNE WALA FUNCTION
+// ========== 3. TEXT TO SPEECH (TTS) ==========
 function speak(text){
-  window.speechSynthesis.cancel();
+  window.speechSynthesis.cancel(); 
   const speech = new SpeechSynthesisUtterance(text);
-  speech.lang = 'hi-IN'; // Hindi voice. English: 'en-US'
-  speech.rate = 1;
+  speech.lang = 'hi-IN'; 
+  speech.rate = 1.1; 
   window.speechSynthesis.speak(speech);
 }
 </script>
