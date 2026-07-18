@@ -19,6 +19,9 @@ def home():
 def ask():
     data = request.json or {}
     question = data.get("question", "").strip()
+    
+    # Advanced features like attachment or dropdown mode (if needed in future)
+    mode = data.get("mode", "Ask").strip() 
 
     if not question:
         return jsonify({"error": "Question cannot be empty"}), 400
@@ -39,7 +42,7 @@ def ask():
                         "3. Never say or claim that you are Meta AI, ChatGPT, or Gemini. You are strictly CyberLabGPT Pro."
                     )
                 },
-                {"role": "user", "content": question}
+                {"role": "user", "content": f"[{mode} Mode] {question}" if mode != "Ask" else question}
             ],
             model="llama-3.3-70b-versatile",
             temperature=0.7,
