@@ -5,108 +5,559 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CyberLabGPT Pro</title>
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0f1724">
-  <link rel="stylesheet" href="/static/style.css">
+  <meta name="theme-color" content="#0d0d11">
+  
+  <!-- Premium Fonts and Three.js Library -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at center, #16192b 0%, #090a10 100%);
+      --glass-bg: rgba(22, 26, 43, 0.45);
+      --glass-border: rgba(255, 255, 255, 0.07);
+      --accent-cyan: #00f0ff;
+      --accent-glow: rgba(0, 240, 255, 0.25);
+      --text-main: #ffffff;
+      --text-muted: #8a8f9f;
+      --input-bg: rgba(30, 35, 58, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #090a10;
+      color: var(--text-main);
+    }
+
+    /* 3D Canvas Container */
+    #canvas-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* Main UI Container */
+    .container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2rem 1.5rem;
+      background: radial-gradient(circle at 50% 50%, rgba(20, 24, 46, 0.4) 0%, transparent 80%);
+    }
+
+    /* Luxury Header */
+    .header {
+      width: 100%;
+      max-width: 800px;
+      text-align: center;
+      margin-top: 5vh;
+      animation: fadeIn 1s ease-out;
+    }
+
+    .brand h1 {
+      font-size: 2.75rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      background: linear-gradient(135deg, #ffffff 30%, #a5b4fc 70%, var(--accent-cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+      text-shadow: 0 0 40px rgba(0, 240, 255, 0.1);
+    }
+
+    .brand p.tag {
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    /* Chat History Screen */
+    .chat-wrapper {
+      width: 100%;
+      max-width: 840px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      margin: 2rem 0;
+      padding-right: 8px;
+    }
+
+    .chat-wrapper::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-wrapper::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .chat-wrapper::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+    }
+
+    .chatBox {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .message {
+      display: flex;
+      width: 100%;
+      animation: messageSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .message.user {
+      justify-content: flex-end;
+    }
+
+    .message .bubble {
+      max-width: 75%;
+      padding: 1rem 1.25rem;
+      border-radius: 18px;
+      font-size: 0.98rem;
+      line-height: 1.6;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+
+    .message.user .bubble {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #ffffff;
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.ai .bubble {
+      background: rgba(13, 15, 28, 0.6);
+      border: 1px solid var(--glass-border);
+      color: #e2e8f0;
+      border-bottom-left-radius: 4px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    }
+
+    /* Luxury Input Bar (As requested in image) */
+    .composer-container {
+      width: 100%;
+      max-width: 800px;
+      background: var(--input-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 0.75rem 1rem;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      margin-bottom: 1.5rem;
+    }
+
+    .composer-container:focus-within {
+      border-color: rgba(0, 240, 255, 0.4);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 20px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .composer-top {
+      width: 100%;
+    }
+
+    .composer-top textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #ffffff;
+      font-size: 1.05rem;
+      resize: none;
+      height: 44px;
+      max-height: 150px;
+      line-height: 1.5;
+    }
+
+    .composer-top textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .composer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.03);
+    }
+
+    .controls-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Luxury Interactive Buttons */
+    .btn-action {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      padding: 0.5rem 0.85rem;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+
+    .btn-action:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .btn-action svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    .mode-select {
+      appearance: none;
+      background: transparent;
+      border: none;
+      color: inherit;
+      font-size: inherit;
+      font-weight: inherit;
+      cursor: pointer;
+      outline: none;
+      padding-right: 4px;
+    }
+
+    /* Premium Send Arrow Button */
+    .btn-send {
+      background: #ffffff;
+      border: none;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .btn-send:hover {
+      transform: scale(1.08);
+      background: var(--accent-cyan);
+      box-shadow: 0 0 15px var(--accent-cyan);
+    }
+
+    .btn-send svg {
+      width: 16px;
+      height: 16px;
+      fill: #090a10;
+      transition: fill 0.2s;
+    }
+
+    .btn-send.loading {
+      background: rgba(255, 255, 255, 0.2) !important;
+      cursor: not-allowed;
+      animation: pulse 1.5s infinite;
+    }
+
+    /* Footer text */
+    .footer {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.3);
+      text-align: center;
+      letter-spacing: 0.02em;
+    }
+
+    .footer a {
+      color: rgba(255, 255, 255, 0.5);
+      text-decoration: none;
+      margin: 0 4px;
+      border-bottom: 1px solid transparent;
+      transition: border 0.2s;
+    }
+
+    .footer a:hover {
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes messageSlide {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+  </style>
 </head>
 <body>
+
+  <!-- Background 3D Animation Space -->
+  <div id="canvas-container"></div>
+
   <main class="container">
-    <header class="header">
+    <header class="header" id="welcomeHeader">
       <div class="brand">
-        <img src="/icon-192.png" alt="logo" class="logo">
-        <div>
-          <h1>CyberLabGPT Pro</h1>
-          <p class="tag">Cybersecurity & Ethical Hacking assistant — Hindi supported</p>
-        </div>
+        <h1>What will you hack today?</h1>
+        <p class="tag">Find and fix vulnerabilities by working with AI.</p>
       </div>
     </header>
 
-    <section id="chatContainer" class="card">
-      <div id="chatBox" class="chatBox" aria-live="polite"></div>
-    </section>
+    <div class="chat-wrapper" id="chatWrapper" style="display: none;">
+      <section id="chatBox" class="chatBox" aria-live="polite"></section>
+    </div>
 
-    <form id="composer" class="composer" onsubmit="return false;">
-      <button id="micBtn" class="btn mic" title="Voice input">🎤</button>
-      <input aria-label="प्रश्न लिखें" type="text" id="userInput" placeholder="यहाँ लिखें या बोलें..." autocomplete="off">
-      <button id="hifi" class="btn send">Send</button>
-    </form>
+    <div class="composer-container">
+      <div class="composer-top">
+        <textarea id="userInput" placeholder="Ask CyberLabGPT Pro to find vulnerabilities..." rows="1"></textarea>
+      </div>
+      <div class="composer-bottom">
+        <div class="controls-left">
+          <!-- Attachment Button -->
+          <button class="btn-action" title="Attach code or file" onclick="alert('File upload integration can be processed here.')">
+            <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-3.31 2.69-6 6-6s6 2.69 6 6v10.5c0 4.42-3.58 8-8 8s-8-3.58-8-8V6h2v9.5c0 3.31 2.69 6 6 6s6-2.69 6-6V5c0-2.21-1.79-4-4-4s-4 1.79-4 4v12.5c0 1.1.9 2 2 2s2-.9 2-2V6h2z"/></svg>
+          </button>
+          
+          <!-- Mode Selector Dropdown -->
+          <div class="btn-action">
+            <select id="modeSelect" class="mode-select">
+              <option value="Ask">Ask</option>
+              <option value="Exploit Analysis">Exploit</option>
+              <option value="Code Audit">Audit</option>
+            </select>
+            <svg style="width:10px; height:10px;" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
 
-    <footer class="footer">Powered by Groq • Keep prompts concise for best results</footer>
+          <!-- Mic Feature -->
+          <button id="micBtn" class="btn-action" title="Voice Input" style="padding: 0.5rem 0.6rem;">🎤</button>
+        </div>
+
+        <!-- Send Arrow Button -->
+        <button id="hifi" class="btn-send" title="Send message">
+          <svg viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <footer class="footer">
+      By messaging CyberLabGPT Pro, you agree to our <a href="#">Terms</a> and have read our <a href="#">Privacy Policy</a>.
+    </footer>
   </main>
 
   <script>
-  // Helper: escape HTML to avoid injection
-  function escapeHtml(str){
-    if(!str) return '';
-    return str.replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
-  }
+    // --- THREE.JS LUXURY 3D PARTICLE ANIMATION SETUP ---
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+    camera.position.z = 400;
 
-  const chatBox = document.getElementById('chatBox');
-  const sendBtn = document.getElementById('hifi');
-  const inputEl = document.getElementById('userInput');
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    container.appendChild(renderer.domElement);
 
-  async function sendQuestion(){
-    const text = inputEl.value.trim();
-    if(!text) return;
-    appendMessage('user', text);
-    setBusy(true);
-    inputEl.value = '';
-
-    try{
-      const res = await fetch('/ask', {method:'POST',headers:{'Content-Type':'application/json'},body: JSON.stringify({question: text})});
-      const data = await res.json();
-      if(res.ok){
-        appendMessage('ai', data.answer || 'No answer');
-        // speak(data.answer || '');
-      } else {
-        appendMessage('ai', 'त्रुटि: ' + (data.error || 'सर्वर समस्या'));
-      }
-    } catch(err){
-      appendMessage('ai', 'सर्वर से जुड़ाव असफल');
-      console.error(err);
-    } finally{
-      setBusy(false);
+    // Particle Geometry
+    const particleCount = 130;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(particleCount * 3);
+    
+    for(let i = 0; i < particleCount * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 800;
+      positions[i+1] = (Math.random() - 0.5) * 800;
+      positions[i+2] = (Math.random() - 0.5) * 400;
     }
-  }
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-  function appendMessage(who, text){
-    const div = document.createElement('div');
-    div.className = 'message ' + who;
-    div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
-
-  function setBusy(flag){
-    if(flag){
-      sendBtn.disabled = true; sendBtn.classList.add('loading');
-    } else {
-      sendBtn.disabled = false; sendBtn.classList.remove('loading');
-    }
-  }
-
-  sendBtn.addEventListener('click', sendQuestion);
-  inputEl.addEventListener('keypress', e => { if(e.key === 'Enter') sendQuestion(); });
-
-  // Speech recognition (STT)
-  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(SpeechRecognition){
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'hi-IN';
-    recognition.continuous = false;
-    const micBtn = document.getElementById('micBtn');
-    let listening = false;
-    micBtn.addEventListener('click', (e) =>{
-      e.preventDefault();
-      if(!listening){ recognition.start(); micBtn.classList.add('active'); listening = true; }
-      else { recognition.stop(); micBtn.classList.remove('active'); listening = false; }
+    // Material with digital cyan tint
+    const material = new THREE.PointsMaterial({
+      color: 0x00f0ff,
+      size: 3,
+      transparent: true,
+      opacity: 0.45,
+      blending: THREE.AdditiveBlending
     });
 
-    recognition.onresult = (ev) => { inputEl.value = ev.results[0][0].transcript; sendQuestion(); };
-    recognition.onend = () => { listening = false; document.getElementById('micBtn').classList.remove('active'); };
-  } else {
-    document.getElementById('micBtn').style.display = 'none';
-  }
-  </script>
+    const particleSystem = new THREE.Points(geometry, material);
+    scene.add(particleSystem);
 
+    // Dynamic mouse parallax interaction
+    let mouseX = 0, mouseY = 0;
+    document.addEventListener('mousemove', (e) => {
+      mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
+      mouseY = (e.clientY - window.innerHeight / 2) * 0.05;
+    });
+
+    function animate() {
+      requestAnimationFrame(animate);
+      
+      // Infinite tech rotational movement
+      particleSystem.rotation.x += 0.0008;
+      particleSystem.rotation.y += 0.0005;
+
+      // Smooth mouse tracking
+      camera.position.x += (mouseX - camera.position.x) * 0.05;
+      camera.position.y += (-mouseY - camera.position.y) * 0.05;
+      camera.lookAt(scene.position);
+
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+
+    // --- CHAT SYSTEM LOGIC ---
+    function escapeHtml(str){
+      if(!str) return '';
+      return str.replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
+    }
+
+    const chatBox = document.getElementById('chatBox');
+    const chatWrapper = document.getElementById('chatWrapper');
+    const welcomeHeader = document.getElementById('welcomeHeader');
+    const sendBtn = document.getElementById('hifi');
+    const inputEl = document.getElementById('userInput');
+    const modeSelect = document.getElementById('modeSelect');
+
+    // Auto resize input text field height dynamically
+    inputEl.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = (this.scrollHeight - 10) + 'px';
+    });
+
+    async function sendQuestion(){
+      const text = inputEl.value.trim();
+      if(!text) return;
+
+      // Layout transition from main screen to chat screen
+      if(welcomeHeader.style.display !== 'none') {
+        welcomeHeader.style.display = 'none';
+        chatWrapper.style.display = 'flex';
+      }
+
+      appendMessage('user', text);
+      setBusy(true);
+      inputEl.value = '';
+      inputEl.style.height = '44px';
+
+      try{
+        const res = await fetch('/ask', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            question: text,
+            mode: modeSelect.value
+          })
+        });
+        const data = await res.json();
+        if(res.ok){
+          appendMessage('ai', data.answer || 'No response');
+        } else {
+          appendMessage('ai', 'त्रुटि: ' + (data.error || 'सर्वर समस्या'));
+        }
+      } catch(err){
+        appendMessage('ai', 'सर्ver से जुड़ाव असफल। कृपया फिर प्रयास करें।');
+        console.error(err);
+      } finally{
+        setBusy(false);
+      }
+    }
+
+    function appendMessage(who, text){
+      const div = document.createElement('div');
+      div.className = 'message ' + who;
+      div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+      chatBox.appendChild(div);
+      
+      // Smooth automatic scroll inside glass zone
+      chatWrapper.scrollTop = chatWrapper.scrollHeight;
+    }
+
+    function setBusy(flag){
+      if(flag){
+        sendBtn.disabled = true; 
+        sendBtn.classList.add('loading');
+      } else {
+        sendBtn.disabled = false; 
+        sendBtn.classList.remove('loading');
+      }
+    }
+
+    sendBtn.addEventListener('click', sendQuestion);
+    inputEl.addEventListener('keypress', e => { 
+      if(e.key === 'Enter' && !e.shiftKey) { 
+        e.preventDefault(); 
+        sendQuestion(); 
+      } 
+    });
+
+    // Speech recognition handling (STT)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if(SpeechRecognition){
+      const recognition = new SpeechRecognition();
+      recognition.lang = 'hi-IN';
+      recognition.continuous = false;
+      const micBtn = document.getElementById('micBtn');
+      let listening = false;
+      
+      micBtn.addEventListener('click', (e) =>{
+        e.preventDefault();
+        if(!listening){ 
+          recognition.start(); 
+          micBtn.style.color = 'var(--accent-cyan)';
+          listening = true; 
+        } else { 
+          recognition.stop(); 
+          micBtn.style.color = 'var(--text-muted)';
+          listening = false; 
+        }
+      });
+
+      recognition.onresult = (ev) => { 
+        inputEl.value = ev.results[0][0].transcript; 
+        sendQuestion(); 
+      };
+      recognition.onend = () => { 
+        listening = false; 
+        micBtn.style.color = 'var(--text-muted)';
+      };
+    } else {
+      document.getElementById('micBtn').style.display = 'none';
+    }
+  </script>
 </body>
 </html>
