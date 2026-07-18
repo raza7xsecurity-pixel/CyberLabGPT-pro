@@ -7,11 +7,12 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0d0d11">
   
-  <!-- Premium Fonts and Three.js Library -->
+  <!-- Premium Fonts, Three.js and Marked Markdown Renderer -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <style>
     :root {
@@ -155,6 +156,18 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
 
+    /* Markdown Inside Bubble Overrides */
+    .message.ai .bubble p {
+      margin-bottom: 0.75rem;
+    }
+    .message.ai .bubble p:last-child {
+      margin-bottom: 0;
+    }
+    .message.ai .bubble ul, .message.ai .bubble ol {
+      margin-left: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
     /* Luxury Input Bar (As requested in image) */
     .composer-container {
       width: 100%;
@@ -231,24 +244,6 @@
     .btn-action:hover {
       background: rgba(255, 255, 255, 0.08);
       color: #ffffff;
-    }
-
-    .btn-action svg {
-      width: 16px;
-      height: 16px;
-      fill: currentColor;
-    }
-
-    .mode-select {
-      appearance: none;
-      background: transparent;
-      border: none;
-      color: inherit;
-      font-size: inherit;
-      font-weight: inherit;
-      cursor: pointer;
-      outline: none;
-      padding-right: 4px;
     }
 
     /* Premium Send Arrow Button */
@@ -339,27 +334,12 @@
 
     <div class="composer-container">
       <div class="composer-top">
-        <textarea id="userInput" placeholder="Ask CyberLabGPT Pro to find vulnerabilities..." rows="1"></textarea>
+        <textarea id="userInput" placeholder="Ask CyberLabGPT Pro" rows="1"></textarea>
       </div>
       <div class="composer-bottom">
         <div class="controls-left">
-          <!-- Attachment Button -->
-          <button class="btn-action" title="Attach code or file" onclick="alert('File upload integration can be processed here.')">
-            <svg viewBox="0 0 24 24"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-3.31 2.69-6 6-6s6 2.69 6 6v10.5c0 4.42-3.58 8-8 8s-8-3.58-8-8V6h2v9.5c0 3.31 2.69 6 6 6s6-2.69 6-6V5c0-2.21-1.79-4-4-4s-4 1.79-4 4v12.5c0 1.1.9 2 2 2s2-.9 2-2V6h2z"/></svg>
-          </button>
-          
-          <!-- Mode Selector Dropdown -->
-          <div class="btn-action">
-            <select id="modeSelect" class="mode-select">
-              <option value="Ask">Ask</option>
-              <option value="Exploit Analysis">Exploit</option>
-              <option value="Code Audit">Audit</option>
-            </select>
-            <svg style="width:10px; height:10px;" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
-          </div>
-
           <!-- Mic Feature -->
-          <button id="micBtn" class="btn-action" title="Voice Input" style="padding: 0.5rem 0.6rem;">🎤</button>
+          <button id="micBtn" class="btn-action" title="Voice Input" style="padding: 0.5rem 0.6rem;">🎤 Voice</button>
         </div>
 
         <!-- Send Arrow Button -->
@@ -451,7 +431,6 @@
     const welcomeHeader = document.getElementById('welcomeHeader');
     const sendBtn = document.getElementById('hifi');
     const inputEl = document.getElementById('userInput');
-    const modeSelect = document.getElementById('modeSelect');
 
     // Auto resize input text field height dynamically
     inputEl.addEventListener('input', function() {
@@ -480,17 +459,17 @@
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({
             question: text,
-            mode: modeSelect.value
+            mode: "Ask"
           })
         });
         const data = await res.json();
         if(res.ok){
           appendMessage('ai', data.answer || 'No response');
         } else {
-          appendMessage('ai', 'त्रुटि: ' + (data.error || 'सर्वर समस्या'));
+          appendMessage('ai', 'Error: ' + (data.error || 'Server issue'));
         }
       } catch(err){
-        appendMessage('ai', 'सर्ver से जुड़ाव असफल। कृपया फिर प्रयास करें।');
+        appendMessage('ai', 'Connection failed. Please try again.');
         console.error(err);
       } finally{
         setBusy(false);
@@ -500,7 +479,14 @@
     function appendMessage(who, text){
       const div = document.createElement('div');
       div.className = 'message ' + who;
-      div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+      
+      if (who === 'ai') {
+        // Render Markdown cleanly with markdown paragraphs and bullets
+        div.innerHTML = `<div class="bubble">${marked.parse(text)}</div>`;
+      } else {
+        div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
+      }
+      
       chatBox.appendChild(div);
       
       // Smooth automatic scroll inside glass zone
@@ -529,7 +515,7 @@
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if(SpeechRecognition){
       const recognition = new SpeechRecognition();
-      recognition.lang = 'hi-IN';
+      recognition.lang = 'en-US';
       recognition.continuous = false;
       const micBtn = document.getElementById('micBtn');
       let listening = false;
