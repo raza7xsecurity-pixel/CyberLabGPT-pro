@@ -7,7 +7,6 @@
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0d0d11">
   
-  <!-- Premium Fonts, Three.js and Marked Markdown Renderer -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -41,7 +40,6 @@
       color: var(--text-main);
     }
 
-    /* 3D Canvas Container */
     #canvas-container {
       position: absolute;
       top: 0;
@@ -52,7 +50,6 @@
       pointer-events: none;
     }
 
-    /* Main UI Container */
     .container {
       position: relative;
       z-index: 2;
@@ -66,7 +63,6 @@
       background: radial-gradient(circle at 50% 50%, rgba(20, 24, 46, 0.4) 0%, transparent 80%);
     }
 
-    /* Luxury Header */
     .header {
       width: 100%;
       max-width: 800px;
@@ -93,7 +89,6 @@
       font-weight: 400;
     }
 
-    /* Chat History Screen */
     .chat-wrapper {
       width: 100%;
       max-width: 840px;
@@ -157,19 +152,6 @@
       box-shadow: 0 10px 30px rgba(0,0,0,0.25);
     }
 
-    /* Markdown Inside Bubble Overrides */
-    .message.ai .bubble p {
-      margin-bottom: 0.75rem;
-    }
-    .message.ai .bubble p:last-child {
-      margin-bottom: 0;
-    }
-    .message.ai .bubble ul, .message.ai .bubble ol {
-      margin-left: 1.25rem;
-      margin-bottom: 0.75rem;
-    }
-
-    /* Luxury Input Bar */
     .composer-container {
       width: 100%;
       max-width: 800px;
@@ -182,6 +164,10 @@
       box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
     }
 
     .composer-container:focus-within {
@@ -191,7 +177,7 @@
     }
 
     .composer-top {
-      width: 100%;
+      flex: 1;
     }
 
     .composer-top textarea {
@@ -202,52 +188,16 @@
       color: #ffffff;
       font-size: 1.05rem;
       resize: none;
-      height: 44px;
+      height: 24px;
       max-height: 150px;
       line-height: 1.5;
+      display: block;
     }
 
     .composer-top textarea::placeholder {
       color: var(--text-muted);
     }
 
-    .composer-bottom {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-top: 0.5rem;
-      padding-top: 0.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    .controls-left {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    /* Luxury Interactive Buttons */
-    .btn-action {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      color: var(--text-muted);
-      padding: 0.5rem 0.85rem;
-      border-radius: 12px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      font-size: 0.85rem;
-      font-weight: 500;
-      transition: all 0.2s ease;
-    }
-
-    .btn-action:hover {
-      background: rgba(255, 255, 255, 0.08);
-      color: #ffffff;
-    }
-
-    /* Premium Send Arrow Button */
     .btn-send {
       background: #ffffff;
       border: none;
@@ -258,6 +208,7 @@
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      flex-shrink: 0;
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
@@ -271,7 +222,6 @@
       width: 16px;
       height: 16px;
       fill: #090a10;
-      transition: fill 0.2s;
     }
 
     .btn-send.loading {
@@ -280,7 +230,6 @@
       animation: pulse 1.5s infinite;
     }
 
-    /* Footer text */
     .footer {
       font-size: 0.75rem;
       color: rgba(255, 255, 255, 0.3);
@@ -293,14 +242,8 @@
       text-decoration: none;
       margin: 0 4px;
       border-bottom: 1px solid transparent;
-      transition: border 0.2s;
     }
 
-    .footer a:hover {
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-
-    /* Animations */
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -318,7 +261,6 @@
 </head>
 <body>
 
-  <!-- Background 3D Animation Space -->
   <div id="canvas-container"></div>
 
   <main class="container">
@@ -337,17 +279,9 @@
       <div class="composer-top">
         <textarea id="userInput" placeholder="Ask CyberLabGPT Pro" rows="1"></textarea>
       </div>
-      <div class="composer-bottom">
-        <div class="controls-left">
-          <!-- Mic Feature -->
-          <button id="micBtn" class="btn-action" title="Voice Input" style="padding: 0.5rem 0.6rem;">🎤 Voice</button>
-        </div>
-
-        <!-- Send Arrow Button -->
-        <button id="hifi" class="btn-send" title="Send message">
-          <svg viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
-        </button>
-      </div>
+      <button id="hifi" class="btn-send" title="Send message">
+        <svg viewBox="0 0 24 24"><path d="M4 12l1.41 1.41L11 7.83V20h2V7.83l5.58 5.59L20 12l-8-8-8 8z"/></svg>
+      </button>
     </div>
 
     <footer class="footer">
@@ -356,7 +290,6 @@
   </main>
 
   <script>
-    // --- THREE.JS LUXURY 3D PARTICLE ANIMATION SETUP ---
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -367,7 +300,6 @@
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     container.appendChild(renderer.domElement);
 
-    // Particle Geometry
     const particleCount = 130;
     const geometry = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -379,7 +311,6 @@
     }
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-    // Material with digital cyan tint
     const material = new THREE.PointsMaterial({
       color: 0x00f0ff,
       size: 3,
@@ -391,7 +322,6 @@
     const particleSystem = new THREE.Points(geometry, material);
     scene.add(particleSystem);
 
-    // Dynamic mouse parallax interaction
     let mouseX = 0, mouseY = 0;
     document.addEventListener('mousemove', (e) => {
       mouseX = (e.clientX - window.innerWidth / 2) * 0.05;
@@ -400,16 +330,11 @@
 
     function animate() {
       requestAnimationFrame(animate);
-      
-      // Infinite tech rotational movement
       particleSystem.rotation.x += 0.0008;
       particleSystem.rotation.y += 0.0005;
-
-      // Smooth mouse tracking
       camera.position.x += (mouseX - camera.position.x) * 0.05;
       camera.position.y += (-mouseY - camera.position.y) * 0.05;
       camera.lookAt(scene.position);
-
       renderer.render(scene, camera);
     }
     animate();
@@ -420,8 +345,6 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-
-    // --- CHAT SYSTEM LOGIC ---
     function escapeHtml(str){
       if(!str) return '';
       return str.replace(/[&<>\"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
@@ -433,7 +356,6 @@
     const sendBtn = document.getElementById('hifi');
     const inputEl = document.getElementById('userInput');
 
-    // Auto resize input text field height dynamically
     inputEl.addEventListener('input', function() {
       this.style.height = 'auto';
       this.style.height = (this.scrollHeight - 10) + 'px';
@@ -443,7 +365,6 @@
       const text = inputEl.value.trim();
       if(!text) return;
 
-      // Layout transition from main screen to chat screen
       if(welcomeHeader.style.display !== 'none') {
         welcomeHeader.style.display = 'none';
         chatWrapper.style.display = 'flex';
@@ -452,16 +373,13 @@
       appendMessage('user', text);
       setBusy(true);
       inputEl.value = '';
-      inputEl.style.height = '44px';
+      inputEl.style.height = '24px';
 
       try{
         const res = await fetch('/ask', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            question: text,
-            mode: "Ask"
-          })
+          body: JSON.stringify({ question: text })
         });
         const data = await res.json();
         if(res.ok){
@@ -480,17 +398,12 @@
     function appendMessage(who, text){
       const div = document.createElement('div');
       div.className = 'message ' + who;
-      
       if (who === 'ai') {
-        // Render Markdown cleanly with markdown paragraphs and bullets
         div.innerHTML = `<div class="bubble">${marked.parse(text)}</div>`;
       } else {
         div.innerHTML = `<div class="bubble">${escapeHtml(text)}</div>`;
       }
-      
       chatBox.appendChild(div);
-      
-      // Smooth automatic scroll inside glass zone
       chatWrapper.scrollTop = chatWrapper.scrollHeight;
     }
 
@@ -511,40 +424,6 @@
         sendQuestion(); 
       } 
     });
-
-    // Speech recognition handling (STT)
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if(SpeechRecognition){
-      const recognition = new SpeechRecognition();
-      recognition.lang = 'en-US';
-      recognition.continuous = false;
-      const micBtn = document.getElementById('micBtn');
-      let listening = false;
-      
-      micBtn.addEventListener('click', (e) =>{
-        e.preventDefault();
-        if(!listening){ 
-          recognition.start(); 
-          micBtn.style.color = 'var(--accent-cyan)';
-          listening = true; 
-        } else { 
-          recognition.stop(); 
-          micBtn.style.color = 'var(--text-muted)';
-          listening = false; 
-        }
-      });
-
-      recognition.onresult = (ev) => { 
-        inputEl.value = ev.results[0][0].transcript; 
-        sendQuestion(); 
-      };
-      recognition.onend = () => { 
-        listening = false; 
-        micBtn.style.color = 'var(--text-muted)';
-      };
-    } else {
-      document.getElementById('micBtn').style.display = 'none';
-    }
   </script>
 </body>
 </html>
